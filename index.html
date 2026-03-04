@@ -42,7 +42,8 @@
 	        	"images/game-screenshot2.png"
         	
         	],
-	        downloadUrl: "downloads/stgame.zip",
+	        downloadUrl: "https://github.com/Jun27201/St-game/releases/download/v1.0.0/stgame.zip",
+	        githubUrl: "https://github.com/Jun27201/St-game",
 	        type: "exe"
 	    },
 	    
@@ -55,7 +56,8 @@
 	        	"images/画像変換ツール3.png",
         	
         	],
-	        downloadUrl: "downloads/imagetool.zip",
+	        downloadUrl: "https://github.com/Jun27201/jpg-tool/releases/download/v1.0.0/imagetool.zip",
+	        githubUrl: "https://github.com/Jun27201/jpg-tool",
 	        type: "exe"
 	    },
 	    
@@ -66,7 +68,8 @@
 	        	"images/wiki1.png",
 	        	"images/wiki2.png",
         	],
-	        downloadUrl: "downloads/syaberu.zip",
+	        downloadUrl: "https://github.com/Jun27201/wikitool/releases/download/v1.0.0/syaberu.zip",
+	        githubUrl: "https://github.com/Jun27201/wikitool",
 	        type: "exe"
 	    },
 	    
@@ -113,11 +116,14 @@
 	                    <div class="thumb-nav">${thumbTags}</div>
 	                </div>
 	                <div class="work-info">
-	                    <h3>${work.title}</h3>
-	                    <p>${work.description}</p>
+		                <h3>${work.title}</h3>
+		                <p>${work.description}</p>
+	                <div class="btn-group">
 	                    <a href="${work.downloadUrl}" class="btn-download" download>DOWNLOAD</a>
+	                    ${work.githubUrl ? `<a href="${work.githubUrl}" target="_blank" class="btn-github">SOURCE CODE</a>` : ''}
 	                </div>
-	            `;
+	            </div>
+	        `;
 	            container.appendChild(card);
 	            startAutoSlide(workIndex, work.images);
 	        });
@@ -687,22 +693,40 @@
 	
 	document.addEventListener('DOMContentLoaded', () => {
 	    const backToTopBtn = document.getElementById('back-to-top');
+	    
+	    // 判定関数：どこがスクロールしていても数字を拾う
+	    const handleScroll = () => {
+	        const mainScroll = window.scrollY; // メイン画面
+	        const modalEl = document.querySelector('.modal-content'); // モーダル内側
+	        const modalScroll = modalEl ? modalEl.scrollTop : 0;
 
-	    // スクロールを監視
-	    window.addEventListener('scroll', () => {
-	        if (window.scrollY > 300) {
-	            backToTopBtn.style.display = 'block';
+	        // デバッグ用（コンソールに今のスクロール量を出します）
+	        console.log(`Main: ${mainScroll}, Modal: ${modalScroll}`);
+
+	        if (mainScroll > 100 || modalScroll > 100) {
+	            backToTopBtn.style.display = 'flex';
+	            backToTopBtn.style.setProperty('display', 'flex', 'important');
 	        } else {
 	            backToTopBtn.style.display = 'none';
 	        }
-	    });
+	    };
 
-	    // クリックで上に戻る
+	    // 監視対象1：メイン画面
+	    window.addEventListener('scroll', handleScroll);
+
+	    // 監視対象2：モーダルの内側（これが今回の原因の可能性大）
+	    // toggleWorksで中身が作られた後でも動くように、イベントを委譲するか直接貼ります
+	    document.addEventListener('scroll', (e) => {
+	        if (e.target.classList && e.target.classList.contains('modal-content')) {
+	            handleScroll();
+	        }
+	    }, true);
+
+	    // クリック処理
 	    backToTopBtn.addEventListener('click', () => {
-	        window.scrollTo({
-	            top: 0,
-	            behavior: 'smooth'
-	        });
+	        window.scrollTo({ top: 0, behavior: 'smooth' });
+	        const modalEl = document.querySelector('.modal-content');
+	        if (modalEl) modalEl.scrollTo({ top: 0, behavior: 'smooth' });
 	    });
 	});
 	
@@ -773,9 +797,9 @@
 	<div id="image-overlay" class="image-overlay" onclick="closeImage()">
     <span class="close-overlay">&times;</span>
     <img id="overlay-img" src="" alt="拡大画像">
-</div>
-<button id="back-to-top" title="ページトップへ戻る">
-    <i class="fas fa-chevron-up"></i> ↑
-</button>
+    </div>
+    
+	<button id="back-to-top" title="ページトップへ戻る">↑</button>
+	
 </body>
 </html>
