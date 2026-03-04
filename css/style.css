@@ -247,6 +247,7 @@ small {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 /* --- ギャラリー全体のレイアウト --- */
@@ -328,6 +329,9 @@ small {
 
 .work-info {
     padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .work-info h3 {
@@ -340,6 +344,7 @@ small {
     font-size: 0.85rem;
     color: #666;
     margin-bottom: 15px;
+    flex-grow: 1;
 }
 
 .btn-download {
@@ -358,7 +363,8 @@ small {
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: auto;
+    padding-top: 10px;
 }
 .btn-github {
     background-color: #333;
