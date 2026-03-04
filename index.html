@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>自己紹介サイト</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://pyscript.net/releases/2023.11.1/pyscript.css" />
+<script defer src="https://pyscript.net/releases/2023.11.1/pyscript.js"></script>
+</head>
+<body id="profile-game">
+
+	<!-- ヘッダー -->
+	<header>
+    <nav class="nav">
+        <ul>
+            <li><a href="javascript:void(0)" onclick="toggleWorks()">成果物まとめ</a></li>
+        </ul>
+    </nav>
+    <div class="status">
+        <span id="floor-display">現在の階数: <span id="floor-count">0</span> / 8</span>
+    </div>
+	</header>
+
+
+	<!-- ヘッダーここまで -->
+	<script>
+	let currentFloor = 0;
+	let hasAnomaly = false;
+	let blackoutInterval = null;
+	let glitchTimer = null;
+	let activeRunawayEvent = null;
+	let anomalyTimeouts = [];
+	let appearedAnomalies = [];
+	
+	const worksList = [
+	    {
+	        title: "ST GAME (Windows版)",
+	        description: "PythonとPygameで制作したシューティングゲーム。全10ステージ。",
+	        images: [
+	        	"images/game-screenshot1.png",
+	        	"images/game-screenshot2.png"
+        	
+        	],
+	        downloadUrl: "downloads/stgame.zip",
+	        type: "exe"
+	    },
+	    
+	    {
+	        title: "画像変換ツール (Windows版)",
+	        description: "選択したフォルダにある画像ファイルを任意のフォルダに.jpg形式で一括変換 名前も一括で連番になります。",
+	        images: [
+	        	"images/画像変換ツール1.png",
+	        	"images/画像変換ツール2.png",
+	        	"images/画像変換ツール3.png",
+        	
+        	],
+	        downloadUrl: "downloads/imagetool.zip",
+	        type: "exe"
+	    },
+	    
+	    {
+	        title: "Wikipedia読み上げツール (Windows版)",
+	        description: "単語を入力して検索ボタンを押すとWikipediaの内容を読み上げてくれます。",
+	        images: [
+	        	"images/wiki1.png",
+	        	"images/wiki2.png",
+        	],
+	        downloadUrl: "downloads/syaberu.zip",
+	        type: "exe"
+	    },
+	    
+	];
+	
+	let isWorksLoading = false;
+	let activeIntervals = {}; // 作品ごとのタイマー管理
+
+	function toggleWorks() {
+	    const modal = document.getElementById('works-modal');
+	    const container = document.getElementById('works-container');
+	    
+	    if (!modal || !container) return;
+
+	    const isShowing = modal.classList.toggle('is-show');
+
+	    if (isShowing) {
+	        document.body.style.overflow = 'hidden';
+	        container.innerHTML = '';
+	        
+	        // 既存のタイマーを全て停止
+	        Object.values(activeIntervals).forEach(clearInterval);
+	        activeIntervals = {};
+
+	        worksList.forEach((work, workIndex) => {
+	            const card = document.createElement('div');
+	            card.className = 'work-card';
+	            
+	            const thumbTags = work.images.map((imgSrc, i) => 
+	                `<div class="thumb ${i === 0 ? 'active' : ''}" 
+	                      onclick="changeMainImage(${workIndex}, ${i})">
+	                    <img src="${imgSrc}" onerror="this.src='images/no-image.png'">
+	                 </div>`
+	            ).join('');
+
+	            card.innerHTML = `
+	                <div class="gallery-container">
+	                    <div class="main-display">
+	                        <img src="${work.images[0]}" 
+	                             id="current-img-${workIndex}" 
+	                             onclick="zoomImage(this.src)" 
+	                             style="cursor: zoom-in;">
+	                    </div>
+	                    <div class="thumb-nav">${thumbTags}</div>
+	                </div>
+	                <div class="work-info">
+	                    <h3>${work.title}</h3>
+	                    <p>${work.description}</p>
+	                    <a href="${work.downloadUrl}" class="btn-download" download>DOWNLOAD</a>
+	                </div>
+	            `;
+	            container.appendChild(card);
+	            startAutoSlide(workIndex, work.images);
+	        });
+
+	        console.log(`%c[DEBUG] ギャラリーロード完了: ${worksList.length}作品`, "color: #3498db; font-weight: bold;");
+	    } else {
+	        // 閉じる時に全てのタイマーを停止
+	        Object.values(activeIntervals).forEach(clearInterval);
+	        activeIntervals = {};
+	        document.body.style.overflow = '';
+	        console.log("[SYSTEM] ギャラリータイマーを停止しました。");
+	    }
+	}
+	
+	// 画像を拡大表示する関数
+	function zoomImage(imgSrc) {
+	    const overlay = document.getElementById('image-overlay');
+	    const overlayImg = document.getElementById('overlay-img');
+	    
+	    if (!overlay || !overlayImg) return;
+
+	    overlayImg.src = imgSrc;
+	    overlay.classList.add('is-show');
+	    
+	    // デバッグログ
+	    console.log(`%c[DEBUG] 画像拡大: ${imgSrc}`, "color: #9b59b6; font-weight: bold;");
+	}
+
+	// 拡大表示を閉じる関数
+	function closeImage() {
+	    const overlay = document.getElementById('image-overlay');
+	    overlay.classList.remove('is-show');
+	}
+
+	function changeMainImage(workIndex, imgIndex) {
+	    const mainImg = document.getElementById(`current-img-${workIndex}`);
+	    if (!mainImg) return;
+
+	    const card = mainImg.closest('.work-card');
+	    const thumbs = card.querySelectorAll('.thumb');
+	    const work = worksList[workIndex];
+
+	    // 1. フェードアウト
+	    mainImg.style.opacity = '0';
+	    
+	    setTimeout(() => {
+	        // 2. 画像の差し替え
+	        mainImg.src = work.images[imgIndex];
+	        // 3. フェードイン
+	        mainImg.style.opacity = '1';
+	    }, 250);
+
+	    // 4. サムネイルのアクティブ表示更新
+	    thumbs.forEach(t => t.classList.remove('active'));
+	    thumbs[imgIndex].classList.add('active');
+
+	    console.log(`%c[DEBUG] Work[${workIndex}] 切り替え: ${imgIndex + 1}枚目`, "color: #2ecc71;");
+
+	    // 5. タイマーをリセット（手動操作されたので、そこから5秒計測し直す）
+	    if (activeIntervals[workIndex]) {
+	        clearInterval(activeIntervals[workIndex]);
+	        startAutoSlide(workIndex, work.images, imgIndex);
+	    }
+	}
+
+	function startAutoSlide(workIndex, images, startIndex = 0) {
+	    if (!images || images.length <= 1) return;
+
+	    let currentIndex = startIndex;
+	    activeIntervals[workIndex] = setInterval(() => {
+	        currentIndex = (currentIndex + 1) % images.length;
+	        changeMainImage(workIndex, currentIndex);
+	    }, 5000); // 5秒ごとに更新
+	}
+	
+	const defaultProfile = {
+		birthday: "3月29日",
+		from: "兵庫県",
+		hobby: "一人旅、ライブ鑑賞"
+	}
+	
+	const anomalySettings = {
+	        'anomaly-flip': {
+	            action: (card) => card.classList.add('anomaly-flip')
+	        },
+	        'anomaly-red': {
+	            action: (card) => {
+	                // hasAnomalyがtrueの間だけ実行
+	                anomalyTimeouts.push(setTimeout(() => {
+	                    if (hasAnomaly) {
+	                        document.body.classList.add('anomaly-red');
+	                    }
+	                }, 5000));
+	            }
+	        },
+	        'anomaly-text': {
+	            action: (card, els) => {
+	                // タイマーを配列にプッシュして、後でまとめて消せるようにする
+	                anomalyTimeouts.push(setTimeout(() => {
+	                    if (hasAnomaly) els.birthday.innerText = "だれか います";
+	                }, 3000));
+
+	                anomalyTimeouts.push(setTimeout(() => {
+	                    if (hasAnomaly) els.from.innerText = "うしろに";
+	                }, 6000));
+
+	                anomalyTimeouts.push(setTimeout(() => {
+	                    if (hasAnomaly) els.hobby.innerText = "にげて にげて".repeat(10);
+	                }, 9000));
+
+	                if (currentFloor >= 3 && els.skill) {
+	                    anomalyTimeouts.push(setTimeout(() => {
+	                        if (hasAnomaly) {
+	                            els.skill.innerText = "ずっと、見ているよ";
+	                            els.skill.style.color = "red";
+	                        }
+	                    }, 11800));
+	                }
+	                card.classList.add('anomaly-text');
+	            }
+	        },
+	        'anomaly-text-big':{
+	        	action: (card) => card.classList.add('anomaly-text-big')
+	        },
+	        'anomaly-sns':{
+	        	action: (card) => {
+	        		const snsIcon = document.querySelector('#sns img');
+	        		const snsLink = document.querySelector('#sns a');
+	                if (snsIcon) {
+	                	snsIcon.src = "images/instagram-logo.avif";
+	                }
+	                if (snsLink) {
+	                	snsLink.href ="";
+	                }
+	                card.classList.add('anomaly-sns');
+	        	}
+	        },
+	        'anomaly-birthday':{
+	        	action: (card, els) => {
+	        		els.birthday.innerText = "6月66日";
+	        	}
+	        },
+	        'anomaly-glitch-floor': {
+	            action: () => {
+	                const floorEl = document.getElementById('floor-count');
+	                if (floorEl) {
+	                    // もし既に動いていたら一旦止める（念のため）
+	                    if (glitchTimer) clearInterval(glitchTimer);
+
+	                    glitchTimer = setInterval(() => {
+	                        // hasAnomalyがfalse（＝階層移動した）なら自分を止める
+	                        if (!hasAnomaly) {
+	                            clearInterval(glitchTimer);
+	                            glitchTimer = null;
+	                            return;
+	                        }
+	                        floorEl.innerText = getZalgoText(5);
+	                    }, 3000);
+	                }
+	            }
+	        },
+	        'anomaly-eye-trace': {
+	            action: (card) => {
+	                card.classList.add('anomaly-eye-trace');
+	                // マウスが動いた時に traceMouse を実行するようにイベントを登録
+	                window.addEventListener('mousemove', traceMouse);
+	            }
+	        },
+	        'anomaly-fall': {
+	            action: (card, els) => {
+	                // 落下させたい要素（趣味など）を選択
+	                const target = els.hobby;
+	                const text = target.innerText;
+	                target.innerHTML = ''; // 一旦空にする
+
+	                // 1文字ずつ span で囲んで再配置
+	                const spans = text.split('').map(char => {
+	                    const span = document.createElement('span');
+	                    span.innerText = char;
+	                    span.className = 'falling-char';
+	                    target.appendChild(span);
+	                    return span;
+	                });
+
+	                // 3秒後からバラバラと落ち始める
+	                setTimeout(() => {
+	                    if (!hasAnomaly) return;
+	                    
+	                    spans.forEach((span, index) => {
+	                        setTimeout(() => {
+	                            if (hasAnomaly) span.classList.add('is-falling');
+	                        }, index * 50); // 50ミリ秒ずつずらして落下
+	                    });
+	                }, 3000);
+	            }
+	        },
+	        'anomaly-runaway': {
+	            action: (card) => {
+	                const btnNormal = document.getElementById('btn-normal');
+	                if (!btnNormal) return;
+
+	                // マウスの動きを監視して、近づいたら即座に逃げる
+	                const runawaySuperFast = (e) => {
+	                    if (!hasAnomaly) return;
+
+	                    const rect = btnNormal.getBoundingClientRect();
+	                    const btnCenterX = rect.left + rect.width / 2;
+	                    const btnCenterY = rect.top + rect.height / 2;
+
+	                    // マウスとボタンの中心距離を計算
+	                    const distance = Math.hypot(e.clientX - btnCenterX, e.clientY - btnCenterY);
+
+	                    // 150px以内に近づいたら逃走（反応距離を調整可能）
+	                    if (distance < 150) {
+	                        const offsetX = (Math.random() - 0.5) * 600; // 逃げる範囲を拡大
+	                        const offsetY = (Math.random() - 0.5) * 400;
+
+	                        btnNormal.style.position = 'relative';
+	                        // transitionを0.05s（超高速）に設定
+	                        btnNormal.style.transition = 'all 0.05s cubic-bezier(0.19, 1, 0.22, 1)';
+	                        btnNormal.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+	                        
+	                        console.log("%c[SPEED] 俊敏回避！", "color: #ff0000; font-weight: bold;");
+	                    }
+	                };
+
+	                // window全体でマウス移動を監視（ボタンの外からでも感知）
+	                window.addEventListener('mousemove', runawaySuperFast);
+	                activeRunawayEvent = runawaySuperFast; 
+	            }
+	        },
+	        'anomaly-ghost': {
+	            action: (card) => {
+	                const mainImg = document.querySelector('.left-content .images img');
+	                if (mainImg) {
+	                    // 3秒かけて、画像が真っ黒に塗りつぶされる
+	                    mainImg.style.transition = 'filter 3s ease-in-out';
+	                    anomalyTimeouts.push(setTimeout(() => {
+	                        if (hasAnomaly) mainImg.style.filter = 'brightness(0)';
+	                    }, 3000));
+	                }
+	            }
+	        },
+		};
+	    
+	
+	
+
+	function updateFloor() {
+	    // 1. 各種要素の取得
+	    const card = document.getElementById('profile-game');
+	    const overlay = document.getElementById('blackout-overlay');
+	    const snsIcon = document.querySelector('#sns img');
+	    const snsLink = document.querySelector('.sns a'); // 元のコードのセレクタミス修正（.sns -> #sns）
+	    const mainImg = document.querySelector('.left-content .images img');
+	    const floorEl = document.getElementById('floor-count');
+	    const skillRow = document.getElementById('special-skill-row'); 
+	    const skillText = document.getElementById('special-skill');    
+	    const btnAnomaly = document.getElementById('btn-anomaly');
+	    const btnNormal = document.getElementById('btn-normal');
+	    const btnRestart = document.getElementById('btn-restart');
+	    
+
+	    const elements = {
+	        birthday: document.getElementById('birthday'),
+	        from: document.getElementById('from'),
+	        hobby: document.getElementById('hobby'),
+	        skill: document.getElementById('special-skill')
+	    };
+	    
+
+	    // 2. 全てを初期状態にリセット
+	    card.className = ''; 
+	    if (floorEl) floorEl.innerText = currentFloor; 
+	    
+	    // 基本プロフィールのリセット
+	    elements.birthday.innerText = defaultProfile.birthday;
+	    elements.from.innerText = defaultProfile.from;
+	    elements.hobby.innerText = defaultProfile.hobby;
+
+	    if (skillText) {
+	        skillText.innerText = "早起き、情報収集";
+	        skillText.style.color = "";
+	    }
+	    
+	    document.body.classList.remove('anomaly-red');
+	    
+	    if (skillRow && currentFloor < 3) {
+	        skillRow.style.display = "none";
+	    }
+	    
+	    if (mainImg) {
+	        mainImg.style.filter = '';       // 黒塗りを解除
+	        mainImg.style.transition = '';   // アニメーションをリセット
+	        mainImg.style.opacity = '1';     // 消える異変用
+	    }
+	    
+	    if (btnNormal) {
+	        btnNormal.style.position = '';
+	        btnNormal.style.transform = '';
+	        btnNormal.style.transition = '';
+	        
+	        // windowからイベントリスナーを剥がす
+	        if (activeRunawayEvent) {
+	            window.removeEventListener('mousemove', activeRunawayEvent);
+	            activeRunawayEvent = null;
+	        }
+	    }
+
+	    // SNS・画像のリセット
+	    if (snsIcon) snsIcon.src = "images/X.jpg"; 
+	    if (snsLink) {
+	        snsLink.href = "";
+	        snsLink.onclick = null; 
+	    }
+	    if (mainImg) {
+	        mainImg.style.transform = "none";
+	    }
+
+	    if (overlay) {
+	        overlay.style.display = 'none';
+	        overlay.innerText = '';
+	    }
+
+	    // 3. タイマーとイベント監視の完全停止
+	    if (blackoutInterval) {
+	        clearInterval(blackoutInterval);
+	        blackoutInterval = null;
+	    }
+	    
+	    if (glitchTimer) {
+	        clearInterval(glitchTimer);
+	        glitchTimer = null;
+	    }
+	    
+	    anomalyTimeouts.forEach(timeout => clearTimeout(timeout));
+	    anomalyTimeouts = [];
+	    
+	    window.removeEventListener('mousemove', traceMouse);
+	    
+	    if (overlay) { overlay.style.display = 'none'; }
+
+	    // --- ここから「階数に応じた表示」を作る ---
+
+	    if (currentFloor >= 9) {
+        // 【クリア状態】
+        console.log("%c[SYSTEM] クリア画面を構築します", "color: #2ecc71;");
+        
+        if (btnAnomaly) btnAnomaly.style.display = 'none';
+        if (btnNormal)  btnNormal.style.display = 'none'; // これで確実に消えます
+        if (btnRestart) btnRestart.style.display = 'inline-block';
+        
+        if (floorEl) floorEl.innerText = "8";
+        if (skillRow) skillRow.style.display = "";
+        
+        renderFullProfile();
+        
+        hasAnomaly = false;
+        
+        // 異変の残像を消すためにリセット処理へ続く、あるいはここでreturn
+        // お掃除（タイマー停止など）はクリア時も必要なので、returnの前に書くのが理想
+         
+        return; 
+    } 
+
+    // 【通常プレイ中】
+    if (btnRestart) btnRestart.style.display = 'none';
+    
+    // 進むボタンはプレイ中なら常に表示
+    if (btnNormal)  btnNormal.style.display = 'inline-block';
+    
+    // 引き返すボタンの制御（0階なら隠す）
+    if (btnAnomaly) {
+        btnAnomaly.style.display = (currentFloor === 0) ? 'none' : 'inline-block';
+    }
+
+    if (floorEl) floorEl.innerText = currentFloor;
+	    
+	    // 0階ならここで終了
+	    if (currentFloor === 0) {
+        	hasAnomaly = false;
+	        if (skillRow) skillRow.style.display = "none";
+	        return; 
+    	}
+	    
+	    if (currentFloor >= 3) {
+	        if (skillRow && skillRow.style.display === "none") {
+	            alert("【新着情報】特技の項目が新しく追加されました！");
+	            skillRow.style.display = ""; 
+	        }
+	    } else {
+	        if (skillRow) skillRow.style.display = "none";
+	    }
+	    
+	    
+
+	    // 5. 異変判定 (50%の確率)
+	    hasAnomaly = Math.random() > 0.5;
+
+	    if (hasAnomaly) {
+	    	const allKeys = Object.keys(anomalySettings);
+	        const availableAnomalies = allKeys.filter(key => !appearedAnomalies.includes(key));
+	        
+	        if (availableAnomalies.length === 0) {
+	            console.log("全ての異変が出現済みです。通常階として扱います。");
+	            hasAnomaly = false;
+	        } else {
+	            // 残っている異変の中からランダムに選択
+	            const randomKey = availableAnomalies[Math.floor(Math.random() * availableAnomalies.length)];
+	            
+	            // 出現リストに追加
+	            appearedAnomalies.push(randomKey);
+
+	            // 異変の実行
+	            anomalySettings[randomKey].action(card, elements);
+	            console.log("異変発生中（新規）: " + randomKey);
+	            console.log("出現済みリスト: ", appearedAnomalies);
+			
+	        console.log("%c[SYSTEM] 放置判定タイマー開始 (1分後に実行)");
+	        // 6. 1分後に一度だけ判定を行うタイマーをセット
+	        blackoutInterval = setInterval(() => {
+	        	console.log("%c[SYSTEM] 1分経過：ブラックアウト判定を実行します...");
+	            // hasAnomalyがまだtrue（＝階を移動していない）なら判定
+	        	if (hasAnomaly) {
+	                const dice = Math.random();
+	                const threshold = 0.005; // 0.5%の確率
+	                
+	                console.log(`[DEBUG] 判定ダイス: ${dice.toFixed(4)} (しきい値: ${threshold})`);
+
+	                if (dice < threshold) { 
+	                    console.error("%c[EVENT] ブラックアウト条件合致。発動します。", "background: red; color: white;");
+	                    clearInterval(blackoutInterval);
+	                    triggerBlackout();
+	                } else {
+	                    console.log("%c[SAFE] 判定に外れました。", "color: #27ae60;");
+	                }
+	            } else {
+	                console.log("[INFO] すでに階層が移動しているため、判定をスキップしました。");
+	            }
+	        }, 60000); // 300,000ms = 5分
+       		}
+   		} else {
+	        // 異変がない場合の処理
+	        console.log("異変なし");
+	    }
+	}
+	
+	function getZalgoText(length) {
+	    const chars = "迴ｾ蝨ｨ縺ｮ髫主ｱ､ 縺薙％縺ｯ縺ｩ縺薙??縺ｯ繧?￥縺溘縺代※縲?";
+	    let result = "";
+		    for (let i = 0; i < length; i++) {
+		        result += chars.charAt(Math.floor(Math.random() * chars.length));
+		    }
+		    return result;
+	}
+	
+	function traceMouse(e) {
+	    const img = document.querySelector('.left-content .images img');
+	    	if (!img) return;
+
+	    // 画像の中心座標を取得
+	    const rect = img.getBoundingClientRect();
+	    const centerX = rect.left + rect.width / 2;
+	    const centerY = rect.top + rect.height / 2;
+
+	    // マウスと中心の距離を計算
+	    const angleX = (e.clientY - centerY) / 20; // 縦の傾き
+	    const angleY = (e.clientX - centerX) / 20; // 横の傾き
+
+	    // 画像を傾ける（最大角度を制限して不自然さを防ぐ）
+	    img.style.transform = `perspective(500px) rotateX(${-angleX}deg) rotateY(${angleY}deg) scale(1.1)`;
+	}
+	
+	function handleAction(userChoseAnomaly) {
+		// ボタンが押されたら放置タイマーは即座に停止
+	    if (blackoutInterval) {
+	    	clearInterval(blackoutInterval);
+	        blackoutInterval = null;
+    	}
+		
+	    if (userChoseAnomaly === hasAnomaly) {
+	        currentFloor++;
+	        
+	    } else {
+	        currentFloor = 0;
+	        appearedAnomalies = [];
+	        alert("不正解です。最初からやり直しです。");
+	    }
+	    
+	    const floorEl = document.getElementById('floor-count');
+	    if (floorEl) {
+	        floorEl.innerText = currentFloor > 8 ? 8 : currentFloor;
+	    }
+
+	    updateFloor(); // ここで currentFloor >= 9 ならボタンが消える
+
+	    if (currentFloor >= 9) {
+	        alert("脱出成功！プロフィールが完成しました！");
+	    }
+	}
+	
+	function triggerBlackout() {
+	    const overlay = document.getElementById('blackout-overlay');
+	    if (overlay) {
+	        overlay.style.display = 'block';
+	        overlay.innerText = "すぐに消せ".repeat(3000);
+	        
+	        // 3秒後にリセット
+	        setTimeout(() => {
+	            currentFloor = 0; // 0階に戻す
+	            updateFloor();    // 画面をリセット
+	        }, 3000); 
+	    }
+	}
+	
+	function resetGame() {
+	    currentFloor = 0;
+	    appearedAnomalies = [];
+	    
+	    const floorDisplay = document.getElementById('floor-display');
+	    if (floorDisplay) {
+	        // innerHTMLを使って構造ごと元に戻す
+	        floorDisplay.innerHTML = '現在の階数: <span id="floor-count">0</span> / 8';
+	    }
+	    
+	    updateFloor();
+	    console.log("%c[SYSTEM] ゲームをリセットしました。", "color: #f1c40f;");
+	}
+	
+	function renderFullProfile() {
+	    // 特技などを全て表示状態にする
+	    const skillRow = document.getElementById('special-skill-row');
+	    const skillText = document.getElementById('special-skill');
+	    const floorDisplay = document.getElementById('floor-display');
+	    
+	    if (skillRow) skillRow.style.display = "";
+	    if (skillText) {
+	        skillText.innerText = "早起き、情報収集";
+	        skillText.style.color = "";
+	    }
+	    
+	    if (floorDisplay) {
+	        floorDisplay.innerText = "現在の階数: CLEARED";
+	    }
+	    
+	    console.log("%c[DEBUG] 全ての異変を停止し、完成版プロフィールを表示しました。", "color: #2ecc71;");
+	}
+
+	// ページ読み込み時に最初のフロアをセット
+	window.onload = function() {
+		updateFloor();
+	}
+	
+	// コンソールで debugAnomaly('anomaly-runaway') と打つと即座に発動します
+	window.debugAnomaly = function(key) {
+	    hasAnomaly = true;
+	    const card = document.getElementById('profile-game');
+	    const elements = {
+	        birthday: document.getElementById('birthday'),
+	        from: document.getElementById('from'),
+	        hobby: document.getElementById('hobby'),
+	        skill: document.getElementById('special-skill')
+	    };
+	    anomalySettings[key].action(card, elements);
+	    console.log(`[DEBUG] 異変を強制発動: ${key}`);
+	};
+	
+	document.addEventListener('DOMContentLoaded', () => {
+	    const backToTopBtn = document.getElementById('back-to-top');
+
+	    // スクロールを監視
+	    window.addEventListener('scroll', () => {
+	        if (window.scrollY > 300) {
+	            backToTopBtn.style.display = 'block';
+	        } else {
+	            backToTopBtn.style.display = 'none';
+	        }
+	    });
+
+	    // クリックで上に戻る
+	    backToTopBtn.addEventListener('click', () => {
+	        window.scrollTo({
+	            top: 0,
+	            behavior: 'smooth'
+	        });
+	    });
+	});
+	
+	</script>
+	
+	<!-- メイン -->
+	<main>
+		<div class="card-container">
+			<div class="left-content">
+				<h1 id="name">
+					松田 純<br>
+				</h1>
+				<small>まつだ じゅん</small>
+					<div class="images">
+						<img alt="じぶん" src="images/IMG_5952.jpg">
+					</div>
+				<div id="sns">
+					<img alt="X" src="images/X.jpg" >
+				</div>
+			</div>
+			
+			<div class="right-content">
+				<div class="profile">
+					<h2>プロフィール</h2>
+					<table class="profile-info">
+					    <tr>
+					        <th>誕生日</th>
+					        <td id="birthday">3月29日</td>
+					    </tr>
+					    <tr>
+					        <th>出身地</th>
+					        <td id="from">兵庫県</td> </tr>
+					    <tr>
+					        <th>趣味</th>
+					        <td id="hobby">一人旅、ライブ鑑賞</td>
+					    </tr>
+					    <tr id="special-skill-row" style="display: none;">
+				            <th>特技</th>
+				            <td id="special-skill">早起き、情報収集</td>
+			       		</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</main>
+	<!-- メインここまで -->
+	<div class="actions">
+		<button id="btn-anomaly" onclick="handleAction(true)">異変あり（引き返す）</button>
+        <button id="btn-normal" onclick="handleAction(false)">異変なし（進む）</button>
+        <button id="btn-restart" onclick="resetGame()" style="display: none;">もう一回最初から遊ぶ</button>
+    </div>
+	<div id="blackout-overlay"></div>
+	<!-- フッター -->
+	<footer>
+
+
+	</footer>
+	<!-- フッターここまで -->
+	<div id="works-modal" class="modal">
+	    <div class="modal-content">
+	        <span class="close-button" onclick="toggleWorks()">&times;</span>
+	        <h2>WORKS / 制作実績</h2>
+	        <p class="works-description">これまで制作したプログラムや作品のアーカイブです。</p>
+	        
+	        <div id="works-container" class="works-grid"></div>
+	    </div>
+	</div>
+	<div id="image-overlay" class="image-overlay" onclick="closeImage()">
+    <span class="close-overlay">&times;</span>
+    <img id="overlay-img" src="" alt="拡大画像">
+</div>
+<button id="back-to-top" title="ページトップへ戻る">
+    <i class="fas fa-chevron-up"></i> ↑
+</button>
+</body>
+</html>

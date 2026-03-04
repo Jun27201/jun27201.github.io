@@ -1,0 +1,576 @@
+@charset "UTF-8";
+
+:root {
+    --main-green: #68be8d;
+    --text-dark: #2c3e50;
+    --border-light: #ececec;
+}
+
+/* ヘッダー全体の設定 */
+header {
+    width: 100%;
+    padding: 20px 0;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    position: relative; /* 子要素の配置の基準にする */
+    display: flex;
+    flex-direction: column; /* 要素を縦に並べる */
+    align-items: center;    /* 中央揃え */
+    gap: 10px;             /* メニューと階数表示の間の隙間 */
+}
+
+/* ナビゲーションメニュー */
+.nav ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    display: flex;       /* 横並びにする */
+    justify-content: center; /* 中央に寄せる */
+    gap: 40px;          /* 項目間の距離 */
+}
+
+.nav li {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #253958;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.nav li:hover {
+    color: #68be8d; /* ホバー時にテーマカラーにする */
+}
+
+/* 階数表示（8番出口要素） */
+.status {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #888;
+    background: #f0f0f0;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+/* --- メインレイアウトの整理 --- */
+.card-container {
+    display: flex;
+    flex-wrap: wrap; /* モバイル対応 */
+    justify-content: center;
+    align-items: stretch;
+    gap: 30px;
+    padding: 30px;
+    max-width: 900px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+}
+
+/* --- 左カラム：画像と名前 --- */
+.left-content {
+    flex: 1;
+    min-width: 250px;
+    text-align: center;
+    padding-bottom: 20px;
+    border-right: 1px solid var(--border-light); /* 縦の仕切り線 */
+}
+
+.images img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    transition: transform 0.1s ease-out;
+}
+
+#name {
+    font-size: 1.5rem;
+    margin: 10px 0 0;
+    color: var(--text-dark);
+}
+
+small {
+    color: #999;
+    display: block;
+    margin-bottom: 20px;
+}
+
+/* SNS画像のサイズ指定（ここが重要） */
+#sns {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+#sns img {
+    width: 32px;  /* アイコンサイズを固定 */
+    height: 32px;
+    object-fit: contain;
+    border-radius: 6px; /* アイコンは角丸程度に */
+    transition: transform 0.2s;
+}
+
+#sns img:hover {
+    transform: scale(1.1);
+}
+
+/* --- 右カラム：プロフィールテーブル --- */
+.right-content {
+    flex: 1.5;
+    min-width: 300px;
+}
+
+.right-content h2 {
+    font-size: 1.1rem;
+    color: var(--main-green);
+    border-bottom: 2px solid var(--main-green);
+    display: inline-block;
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+.profile-info {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.profile-info tr {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.profile-info th {
+    width: 100px;
+    padding: 15px 0;
+    text-align: left;
+    color: #888;
+    font-size: 0.85rem;
+    vertical-align: top;
+}
+
+.profile-info td {
+    padding: 15px 10px;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* --- アクションボタン --- */
+.actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.actions button {
+    padding: 10px 20px;
+    border-radius: 30px;
+    border: 1px solid var(--main-green);
+    background: transparent;
+    color: var(--main-green);
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.actions button:hover {
+    background: var(--main-green);
+    color: #fff;
+}
+
+/* --- 成果物モーダル（Python作品公開用） --- */
+.modal {
+    display: none;
+    position: fixed; /* 画面に固定 */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 99999; /* 誰よりも手前に */
+    justify-content: center;
+    align-items: center;
+    /* チカチカ防止のための設定 */
+    pointer-events: auto; 
+    overflow: hidden;
+}
+
+.modal.is-show {
+    display: flex; /* classList.toggle('is-show') でここが切り替わる */
+}
+
+.modal-content {
+    background: #fff;
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    padding: 30px;
+    border-radius: 20px;
+    overflow-y: auto; /* 中身が増えたらここだけスクロール */
+    position: relative;
+    /* アニメーション中のガタつき防止 */
+    backface-visibility: hidden;
+}
+
+/* 閉じるボタン */
+.close-button {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 30px;
+    cursor: pointer;
+    color: #888;
+}
+
+
+
+/* 作品リストのデザイン */
+.works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+/* 個別のカードデザイン */
+.work-card {
+	background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- ギャラリー全体のレイアウト --- */
+.gallery-container {
+    width: 100%;
+    background: #000; /* 画像が引き立つ黒背景 */
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #eee;
+}
+
+/* メイン画像：画像のサイズに合わせて枠が広がる設定 */
+.main-display {
+    width: 100%;
+    height: 250px; 
+    min-height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: #000;
+}
+
+.main-display img {
+    /*width: 100%;*/       /* 横幅いっぱいに広げる */
+    height: auto;      /* 高さは画像の比率に合わせる */
+    max-height: 100%; /* 縦に長すぎる画像用のストッパー */
+    max-width: 90%;
+    object-fit: contain;
+    transition: opacity 0.3s ease-in-out; /* 切り替え時のフェード用 */
+}
+
+/* サムネイル（下の小さい画像たち）の並び */
+.thumb-nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(0,0,0,0.5); /* メイン画面との区切り */
+    overflow-x: auto;
+}
+
+/* 小さい画像の枠 */
+.thumb {
+    width: 50px;
+    height: 38px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    overflow: hidden;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+    flex-shrink: 0; /* 潰れないように固定 */
+}
+
+.thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* サムネイルは枠いっぱいに表示 */
+}
+
+.thumb:hover {
+    opacity: 1; /* ホバーで少し明るく */
+    transform: translateY(-2px); /* 少し浮く演出 */
+}
+
+/* 現在表示されている画像のサムネイルを強調 */
+.thumb.active {
+    border-color: #68be8d;
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(104, 190, 141, 0.5);
+}
+
+/* 不要になった古い設定（これらは削除するか上書きしてください） */
+.work-image, .work-image-slider {
+    display: none; 
+}
+
+
+/* ホバー演出 */
+.work-card:hover .work-image img {
+    transform: scale(1.02); /* 全体表示の場合は控えめに拡大 */
+}
+
+.work-info {
+    padding: 15px;
+}
+
+.work-info h3 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: #68be8d;
+}
+
+.work-info p {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.btn-download {
+    display: block;
+    background: #2c3e50;
+    color: #fff !important;
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+/* 拡大オーバーレイの背景 */
+.image-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9); /* モーダルよりさらに暗く */
+    z-index: 100000; /* 全ての要素の最前面 */
+    justify-content: center;
+    align-items: center;
+    cursor: zoom-out;
+}
+
+.image-overlay.is-show {
+    display: flex;
+}
+
+/* 拡大される画像 */
+.image-overlay img {
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+    border: 2px solid #fff;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    animation: zoomAnim 0.3s ease-out;
+}
+
+/* 拡大時のアニメーション */
+@keyframes zoomAnim {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* 閉じるボタン */
+.close-overlay {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: #fff;
+    font-size: 50px;
+    font-weight: bold;
+}
+
+#canvas {
+    width: 100%;
+    max-width: 600px; /* ゲームのWIDTHに合わせる */
+    height: auto;
+    background-color: #000; /* 動いていない時は黒く見えるようにする */
+}
+
+#back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--main-green, #27ae60); /* 通常はメインカラー */
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: none; /* 最初は非表示 */
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+#back-to-top:hover {
+    transform: translateY(-5px);
+    background-color: #2ecc71;
+}
+
+/* --- 異変発生時の特別スタイル --- */
+body.anomaly-red #back-to-top {
+    background-color: #f00 !important;
+    box-shadow: 0 0 15px #f00;
+    animation: shake-btn 0.1s infinite; /* 激しく震える */
+}
+
+@keyframes shake-btn {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(2px, -2px); }
+    50% { transform: translate(-2px, 2px); }
+    75% { transform: translate(2px, 2px); }
+    100% { transform: translate(-2px, -2px); }
+}
+
+/* 異変 */
+
+#blackout-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    color: red;
+    z-index: 9999;
+    
+    /* 文字サイズを小さく（1rem = 16px、0.8rem = 約13px） */
+    font-size: 0.8rem; 
+    
+    /* 行の間隔を狭くして密度を上げる */
+    line-height: 0.9;
+    
+    /* 文字同士の間隔を少し詰めて不気味さを出す */
+    letter-spacing: -1px; 
+    
+    word-break: break-all;
+    overflow: hidden;
+    padding: 5px; /* 余白を最小限に */
+}
+
+.anomaly-flip #name {
+    display: inline-block;
+    transform: rotate(180deg);
+}
+
+/* 1. 画面全体：逃げ場のないどす黒い赤 */
+body.anomaly-red {
+    background-color: #300 !important; /* ほぼ黒に近い赤をベースに */
+    animation: pulseBlood 6s infinite !important; /* 少し早めの鼓動のように */
+    transition: background-color 1s ease;
+}
+
+/* 2. プロフィール部分：白を完全に排除して「闇」にする */
+body.anomaly-red .card-container,
+body.anomaly-red header,
+body.anomaly-red main,
+body.anomaly-red .left-content {
+    background: #000 !important; /* 背景を真っ黒にして赤を際立たせる */
+    border: 2px solid #900 !important; /* 枠線だけ血のような赤に */
+    box-shadow: 0 0 30px #f00 !important; /* 赤い光を放たせる */
+    color: #f00 !important;
+}
+
+/* 3. 文字：血が滴るような赤と白 */
+body.anomaly-red #name, 
+body.anomaly-red h2, 
+body.anomaly-red td, 
+body.anomaly-red th,
+body.anomaly-red .nav li,
+body.anomaly-red #floor-display {
+    color: #ff0000 !important; /* 鮮烈な赤 */
+    text-shadow: 0 0 10px #f00, 0 0 20px #600; /* 文字を発光させる */
+    background: transparent !important;
+}
+
+/* --- プロフィールの下の線を赤くする --- */
+body.anomaly-red .right-content h2 {
+    border-bottom: 2px solid #f00 !important; /* 緑の線を鮮烈な赤に */
+    color: #f00 !important;
+}
+
+/* --- テーブルの区切り線も赤くする --- */
+body.anomaly-red .profile-info tr {
+    border-bottom: 1px solid #600 !important; /* 薄いグレーの線を暗い赤に */
+}
+
+/* --- ボタン2つをホラー仕様に変更 --- */
+body.anomaly-red .actions button {
+    background-color: #200 !important; /* どす黒い背景 */
+    color: #f00 !important;            /* 赤い文字 */
+    border: 1px solid #f00 !important; /* 赤い枠線 */
+    box-shadow: 0 0 10px #800 !important;
+    text-shadow: 0 0 5px #f00;
+}
+
+/* ボタンにマウスを乗せた時の演出（さらに赤く光る） */
+body.anomaly-red .actions button:hover {
+    background-color: #800 !important;
+    color: #fff !important;
+    box-shadow: 0 0 20px #f00 !important;
+}
+
+/* --- 念のため、ヘッダーのナビや階数表示の背景も黒くして赤を際立たせる --- */
+body.anomaly-red .status {
+    background: #200 !important;
+    color: #f00 !important;
+}
+
+/* 4. 画像を不気味に（赤く染める） */
+body.anomaly-red img {
+    filter: sepia(100%) saturate(500%) hue-rotate(-50deg) brightness(0.7) !important;
+}
+
+/* 脈動する血のアニメーション */
+@keyframes pulseBlood {
+    0%   { background-color: #300; }
+    50%  { background-color: #800; } /* じわっと赤く浮き上がる */
+    100% { background-color: #300; }
+}
+
+.anomaly-text-big #name, .anomaly-text-big h2 {
+	font-size: 5.3rem;
+}
+
+.anomaly-eye-trace img {
+    filter: brightness(1.1) contrast(1.1); /* 少しだけ不気味に強調 */
+}
+
+.falling-char {
+    display: inline-block; /* 一文字ずつ動かすために必要 */
+    transition: transform 2s ease-in, opacity 2s;
+    pointer-events: none;
+}
+
+.is-falling {
+    transform: translateY(600px) rotate(360deg); /* 下に落ちながら回転 */
+    opacity: 0;
+}
+/* モバイル対応 */
+@media (max-width: 600px) {
+    .left-content { border-right: none; border-bottom: 1px solid var(--border-light); }
+    .card-container { margin: 20px; padding: 20px; }
+}
