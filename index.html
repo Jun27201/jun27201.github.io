@@ -550,9 +550,10 @@
 	
 	    } else {
 	        console.log("異変なし");
-	        if (adArea) adArea.style.display = 'none';
-	    }
-	}
+	   if (adArea) {
+			adArea.style.display = 'block'; 
+		}
+		}
 	
 	function getZalgoText(length) {
 	    const chars = "迴ｾ蝨ｨ縺ｮ髫主ｱ､ 縺薙％縺ｯ縺ｩ縺薙??縺ｯ繧?￥縺溘縺代※縲?";
@@ -784,7 +785,7 @@
     
 	<button id="back-to-top" title="ページトップへ戻る">↑</button>
 	
-<div id="anomaly-ad" style="display:none; position:fixed; bottom:20px; right:20px; width:200px; border:2px solid red; background:#000; z-index:10000; cursor:pointer;">
+<div id="anomaly-ad" style="display:block; position:fixed; bottom:20px; right:20px; width:200px; border:3px solid #333; background:#000; z-index:10000;">
     <a href="#" target="_blank" style="text-decoration:none; color:white;">
         <img src="images/ad-image.png" alt="AD" style="width:100%; display:block;">
         <div style="font-size:10px; text-align:center; padding:5px;">【PR】クリックして詳細を見る</div>
