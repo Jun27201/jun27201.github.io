@@ -608,15 +608,11 @@ body.anomaly-red img {
     right: 20px;
     width: 220px;
     background: #fff;
-    /* 異変時も色は変えず、通常のグレーに固定 */
     border: 3px solid #333; 
     z-index: 99999;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    transition: all 0.3s;
-    /* 常に表示させる */
     display: block !important; 
 }
-
 /* 広告内の画像 */
 #anomaly-ad img {
     width: 100%;
