@@ -601,18 +601,19 @@ body.anomaly-red img {
 
 /* 異変広告のコンテナ */
 /* 広告の基本スタイルをCSS側に移す */
+/* 異変広告のコンテナ */
 #anomaly-ad {
     position: fixed;
     bottom: 80px;
     right: 20px;
     width: 220px;
     background: #fff;
-    /* 通常時は赤ではなく落ち着いた色にする */
+    /* 異変時も色は変えず、通常のグレーに固定 */
     border: 3px solid #333; 
     z-index: 99999;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
     transition: all 0.3s;
-    /* 確実に表示させる */
+    /* 常に表示させる */
     display: block !important; 
 }
 
@@ -623,15 +624,17 @@ body.anomaly-red img {
     display: block;
 }
 
-/* 揺れるアニメーションを追加して目立たせる */
+/* 揺れるアニメーション（枠の色は変えない） */
 .ad-shake {
     animation: ad-vibrate 0.1s infinite;
 }
 
 @keyframes ad-vibrate {
-    0% { transform: translate(0,0); }
-    50% { transform: translate(2px, 2px); }
-    100% { transform: translate(0,0); }
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(1px, -1px); }
+    50% { transform: translate(-1px, 1px); }
+    75% { transform: translate(1px, 1px); }
+    100% { transform: translate(0, 0); }
 }
 
 /* モバイル対応 */
