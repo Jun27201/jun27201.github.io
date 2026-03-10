@@ -385,8 +385,8 @@
 	    const btnAnomaly = document.getElementById('btn-anomaly');
 	    const btnNormal = document.getElementById('btn-normal');
 	    const btnRestart = document.getElementById('btn-restart');
-	    const adArea = document.getElementById('anomaly-ad'); // ここで定義
-		const adLink = adArea ? adArea.querySelector('a') : null;
+	    const adArea = document.getElementById('anomaly-ad');
+    	const adLink = adArea ? adArea.querySelector('a') : null;
 	
 	    const elements = {
 	        birthday: document.getElementById('birthday'),
@@ -397,13 +397,16 @@
 
 	    // 2. 全てを初期状態にリセット
 	   if (adArea) {
-        adArea.style.display = 'block';
-        adArea.style.border = '2px solid #333'; // 通常時は目立たない色に
-        if (adLink) {
-            adLink.href = "javascript:void(0)"; // どこにも飛ばないようにする
-            adLink.style.cursor = "default";    // カーソルも普通に戻す
-        }
-    }
+	        adArea.style.display = 'block';        // 常に表示
+	        adArea.style.border = '3px solid #333'; // 通常の色に戻す
+	        adArea.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+	        adArea.classList.remove('ad-shake');   // 揺れを止める
+	        
+	        if (adLink) {
+	            adLink.href = "javascript:void(0)"; // リンクを無効化
+	            adLink.style.cursor = "default";    // 指マークを出さない
+	        }
+	    }
 	    
 	    card.className = ''; 
 	    if (floorEl) floorEl.innerText = currentFloor; 
@@ -503,12 +506,17 @@
 	    hasAnomaly = Math.random() > 0.5;
 	
 	    if (hasAnomaly) {
-	        // 異変中：広告表示
+        // 異変中：広告を「活性化」
 	        if (adArea) {
-	            adArea.style.border = '2px solid red'; // 異変時は赤枠で強調
+	            adArea.style.border = '3px solid #ff0000'; // 赤枠にする
+	            adArea.style.boxShadow = '0 0 15px rgba(255,0,0,0.7)';
+	            
+	            // オプション：異変時だけ揺らしても面白いかもしれません
+	            // adArea.classList.add('ad-shake'); 
+	
 	            if (adLink) {
 	                adLink.href = "https://jun27201.github.io/famazon/";
-	                adLink.style.cursor = "pointer"; // クリックできることを示す
+	                adLink.style.cursor = "pointer"; // クリック可能にする
 	            }
 	        }
 	
