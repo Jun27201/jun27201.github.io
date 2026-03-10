@@ -527,35 +527,34 @@
 	    hasAnomaly = Math.random() > 0.5;
 
 	    if (hasAnomaly) {
-	    	const adArea = document.getElementById('anomaly-ad');
-		    if (adArea) {
-		        adArea.style.display = 'block';
-		        const adLink = adArea.querySelector('a');
-		        adLink.href = "https://jun27201.github.io/famazon/";
-		    }
+	    	if (adArea) {
+	            adArea.style.display = 'block';
+	            const adLink = adArea.querySelector('a');
+	            if (adLink) adLink.href = "https://jun27201.github.io/famazon/";
+	        }
 
-		    // 2. 他の異変を抽選して実行 (既存のロジック)
-		    const allKeys = Object.keys(anomalySettings).filter(key => key !== 'anomaly-ad'); // 広告を除外
-		    const availableAnomalies = allKeys.filter(key => !appearedAnomalies.includes(key));
-		    
+			// 2. 他の異変を抽選して実行 (既存のロジック)
+			const allKeys = Object.keys(anomalySettings).filter(key => key !== 'anomaly-ad'); // 広告を除外
+			const availableAnomalies = allKeys.filter(key => !appearedAnomalies.includes(key));
+
+			let targetKey = "";
 		    if (availableAnomalies.length > 0) {
-		        const randomKey = availableAnomalies[Math.floor(Math.random() * availableAnomalies.length)];
-		        appearedAnomalies.push(randomKey);
-		        anomalySettings[randomKey].action(card, elements);
-		        console.log("異変発生 + 広告表示中: " + randomKey);
-		    }
-		} else {
-		    // 異変がない時は広告を隠す (念のためここでもリセット)
-		    const adArea = document.getElementById('anomaly-ad');
-		    if (adArea) adArea.style.display = 'none';
-		    console.log("通常階（広告なし）");
-		}
+            targetKey = availableAnomalies[Math.floor(Math.random() * availableAnomalies.length)];
+            appearedAnomalies.push(targetKey);
+	        } else {
+	            // 全て出尽くした場合はリセットして再抽選
+	            appearedAnomalies = [];
+	            targetKey = allKeys[Math.floor(Math.random() * allKeys.length)];
+	        }
+	
+	        if (targetKey && anomalySettings[targetKey]) {
+	            anomalySettings[targetKey].action(card, elements);
+	            console.log("異変発生中: " + targetKey + " (＋ 広告表示)");
+	        }
 	            
 	            // 出現リストに追加
 	            appearedAnomalies.push(randomKey);
 
-	            // 異変の実行
-	            anomalySettings[randomKey].action(card, elements);
 	            console.log("異変発生中（新規）: " + randomKey);
 	            console.log("出現済みリスト: ", appearedAnomalies);
 			
@@ -581,10 +580,11 @@
 	                console.log("[INFO] すでに階層が移動しているため、判定をスキップしました。");
 	            }
 	        }, 60000); // 300,000ms = 5分
-       		}
+       		
    		} else {
 	        // 異変がない場合の処理
 	        console.log("異変なし");
+			if (adArea) adArea.style.display = 'none';
 	    }
 	}
 	
