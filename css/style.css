@@ -603,29 +603,31 @@ body.anomaly-red img {
 /* 広告の基本スタイルをCSS側に移す */
 /* 異変広告のコンテナ */
 /* 広告の基本スタイル（中央配置版） */
-.anomaly-ad {
+#anomaly-ad {
     display: block;
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 200px;
+    margin: 20px auto;        /* 上下20pxの余白、左右中央配置 */
+    max-width: 300px;         /* PC表示での最大幅 */
+    width: 90%;               /* 画面幅の90%を使用 */
     border: 3px solid #333;
     background: #000;
-    z-index: 10000;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    border-radius: 8px;       /* 角を丸く */
+    overflow: hidden;
 }
 
+
 @media screen and (max-width: 768px) {
-    .anomaly-ad {
-        width: 120px;
-        bottom: 10px;
-        border-width: 2px;
+    #anomaly-ad {
+        max-width: 280px;
+        margin: 15px auto;
     }
-    
-    /* 以下、同じ内容 */
+
+    #anomaly-ad .ad-text {
+        font-size: 10px;
+        padding: 6px;
+    }
 }
+
 
 /* 広告内の画像 */
 #anomaly-ad img {
