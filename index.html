@@ -386,6 +386,7 @@
 	    const btnNormal = document.getElementById('btn-normal');
 	    const btnRestart = document.getElementById('btn-restart');
 	    const adArea = document.getElementById('anomaly-ad'); // ここで定義
+		const adLink = adArea ? adArea.querySelector('a') : null;
 	
 	    const elements = {
 	        birthday: document.getElementById('birthday'),
@@ -395,7 +396,14 @@
 	    };
 
 	    // 2. 全てを初期状態にリセット
-	    if (adArea) adArea.style.display = 'none'; // 定義後なのでエラーになりません
+	   if (adArea) {
+        adArea.style.display = 'block';
+        adArea.style.border = '2px solid #333'; // 通常時は目立たない色に
+        if (adLink) {
+            adLink.href = "javascript:void(0)"; // どこにも飛ばないようにする
+            adLink.style.cursor = "default";    // カーソルも普通に戻す
+        }
+    }
 	    
 	    card.className = ''; 
 	    if (floorEl) floorEl.innerText = currentFloor; 
@@ -497,9 +505,11 @@
 	    if (hasAnomaly) {
 	        // 異変中：広告表示
 	        if (adArea) {
-	            adArea.style.display = 'block';
-	            const adLink = adArea.querySelector('a');
-	            if (adLink) adLink.href = "https://jun27201.github.io/famazon/";
+	            adArea.style.border = '2px solid red'; // 異変時は赤枠で強調
+	            if (adLink) {
+	                adLink.href = "https://jun27201.github.io/famazon/";
+	                adLink.style.cursor = "pointer"; // クリックできることを示す
+	            }
 	        }
 	
 	        // 他の異変を抽選
