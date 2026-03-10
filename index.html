@@ -367,7 +367,19 @@
 	                }
 	            }
 	        },
-		};
+			'anomaly-ad': {
+        action: (card) => {
+            const adArea = document.getElementById('anomaly-ad');
+            if (adArea) {
+                // 異変中のみ表示
+                adArea.style.display = 'block';
+                // リンク先をランダムに変えたり、特定の不気味なサイトに設定
+                const adLink = adArea.querySelector('a');
+                adLink.href = "https://jun27201.github.io/famazon/"; // ここを飛ばしたいURLに変更
+            }
+        }
+    }
+};
 	    
 	
 	
@@ -385,6 +397,7 @@
 	    const btnAnomaly = document.getElementById('btn-anomaly');
 	    const btnNormal = document.getElementById('btn-normal');
 	    const btnRestart = document.getElementById('btn-restart');
+		const adArea = document.getElementById('anomaly-ad');
 	    
 
 	    const elements = {
@@ -396,6 +409,8 @@
 	    
 
 	    // 2. 全てを初期状態にリセット
+		if (adArea) adArea.style.display = 'none';
+		
 	    card.className = ''; 
 	    if (floorEl) floorEl.innerText = currentFloor; 
 	    
@@ -800,6 +815,13 @@
     </div>
     
 	<button id="back-to-top" title="ページトップへ戻る">↑</button>
+	
+<div id="anomaly-ad" style="display:none; position:fixed; bottom:20px; right:20px; width:200px; border:2px solid red; background:#000; z-index:10000; cursor:pointer;">
+    <a href="#" target="_blank" style="text-decoration:none; color:white;">
+        <img src="images/ad-image.png" alt="AD" style="width:100%; display:block;">
+        <div style="font-size:10px; text-align:center; padding:5px;">【PR】クリックして詳細を見る</div>
+    </a>
+</div>
 	
 </body>
 </html>
