@@ -366,16 +366,16 @@ function updateFloor() {
     };
 
     if (adArea) {
-        adArea.style.display = 'block';
-        adArea.style.border = '3px solid #333';
-        adArea.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
-        adArea.classList.remove('ad-shake');
-
-        if (adLink) {
-            adLink.href = "javascript:void(0)";
-            adLink.style.cursor = "default";
-        }
-    }
+	    adArea.style.display = 'block'; 
+	    adArea.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+	    adArea.style.border = '3px solid #333'; // 枠の色を通常に戻す
+	    
+	    if (adLink) {
+	        // 通常時・異変時に関わらず、常に同じリンク先を設定
+	        adLink.href = "https://jun27201.github.io/famazon/"; 
+	        adLink.style.cursor = "pointer"; // 常にクリック可能にする
+	    }
+	}
 
     card.className = '';
     if (floorEl) floorEl.innerText = currentFloor;
@@ -472,16 +472,7 @@ function updateFloor() {
     hasAnomaly = Math.random() > 0.5;
 
     if (hasAnomaly) {
-        if (adArea) {
-            adArea.style.border = '3px solid #333'; 
-            adArea.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
-
-            if (adLink) {
-                adLink.href = "https://jun27201.github.io/famazon/";
-                adLink.style.cursor = "pointer";
-            }
-        }
-
+        // 広告(anomaly-ad)を除外して、他の異変から抽選
         const allKeys = Object.keys(anomalySettings).filter(key => key !== 'anomaly-ad');
         const availableAnomalies = allKeys.filter(key => !appearedAnomalies.includes(key));
 
@@ -496,9 +487,10 @@ function updateFloor() {
 
         if (targetKey && anomalySettings[targetKey]) {
             anomalySettings[targetKey].action(card, elements);
-            console.log("異変発生中: " + targetKey + " (＋ 広告表示)");
+            console.log("異変発生中: " + targetKey);
         }
 
+        // ブラックアウトのタイマー設定
         blackoutInterval = setInterval(() => {
             if (hasAnomaly) {
                 if (Math.random() < 0.005) {
@@ -510,11 +502,8 @@ function updateFloor() {
 
     } else {
         console.log("異変なし");
-        if (adArea) {
-            adArea.style.display = 'block';
-        }
     }
-} 
+}
 
 
 
