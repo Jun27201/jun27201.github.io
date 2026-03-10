@@ -367,19 +367,7 @@
 	                }
 	            }
 	        },
-			'anomaly-ad': {
-        action: (card) => {
-            const adArea = document.getElementById('anomaly-ad');
-            if (adArea) {
-                // 異変中のみ表示
-                adArea.style.display = 'block';
-                // リンク先をランダムに変えたり、特定の不気味なサイトに設定
-                const adLink = adArea.querySelector('a');
-                adLink.href = "https://jun27201.github.io/famazon/"; // ここを飛ばしたいURLに変更
-            }
-        }
-    }
-};
+		};
 	    
 	
 	
@@ -397,7 +385,7 @@
 	    const btnAnomaly = document.getElementById('btn-anomaly');
 	    const btnNormal = document.getElementById('btn-normal');
 	    const btnRestart = document.getElementById('btn-restart');
-		const adArea = document.getElementById('anomaly-ad');
+	
 	    
 
 	    const elements = {
@@ -539,15 +527,29 @@
 	    hasAnomaly = Math.random() > 0.5;
 
 	    if (hasAnomaly) {
-	    	const allKeys = Object.keys(anomalySettings);
-	        const availableAnomalies = allKeys.filter(key => !appearedAnomalies.includes(key));
-	        
-	        if (availableAnomalies.length === 0) {
-	            console.log("全ての異変が出現済みです。通常階として扱います。");
-	            hasAnomaly = false;
-	        } else {
-	            // 残っている異変の中からランダムに選択
-	            const randomKey = availableAnomalies[Math.floor(Math.random() * availableAnomalies.length)];
+	    	const adArea = document.getElementById('anomaly-ad');
+		    if (adArea) {
+		        adArea.style.display = 'block';
+		        const adLink = adArea.querySelector('a');
+		        adLink.href = "https://jun27201.github.io/famazon/";
+		    }
+
+		    // 2. 他の異変を抽選して実行 (既存のロジック)
+		    const allKeys = Object.keys(anomalySettings).filter(key => key !== 'anomaly-ad'); // 広告を除外
+		    const availableAnomalies = allKeys.filter(key => !appearedAnomalies.includes(key));
+		    
+		    if (availableAnomalies.length > 0) {
+		        const randomKey = availableAnomalies[Math.floor(Math.random() * availableAnomalies.length)];
+		        appearedAnomalies.push(randomKey);
+		        anomalySettings[randomKey].action(card, elements);
+		        console.log("異変発生 + 広告表示中: " + randomKey);
+		    }
+		} else {
+		    // 異変がない時は広告を隠す (念のためここでもリセット)
+		    const adArea = document.getElementById('anomaly-ad');
+		    if (adArea) adArea.style.display = 'none';
+		    console.log("通常階（広告なし）");
+		}
 	            
 	            // 出現リストに追加
 	            appearedAnomalies.push(randomKey);
