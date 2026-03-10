@@ -373,170 +373,168 @@
 	
 
 	function updateFloor() {
-    // 1. 各種要素の取得
-    const card = document.getElementById('profile-game');
-    const overlay = document.getElementById('blackout-overlay');
-    const snsIcon = document.querySelector('#sns img');
-    const snsLink = document.querySelector('#sns a'); 
-    const mainImg = document.querySelector('.left-content .images img');
-    const floorEl = document.getElementById('floor-count');
-    const skillRow = document.getElementById('special-skill-row'); 
-    const skillText = document.getElementById('special-skill');    
-    const btnAnomaly = document.getElementById('btn-anomaly');
-    const btnNormal = document.getElementById('btn-normal');
-    const btnRestart = document.getElementById('btn-restart');
-    // 追加：広告エリアをここで取得
-    const adArea = document.getElementById('anomaly-ad');
+	    // 1. 各種要素の取得（ここを関数の最初に行うことで定義エラーを防ぎます）
+	    const card = document.getElementById('profile-game');
+	    const overlay = document.getElementById('blackout-overlay');
+	    const snsIcon = document.querySelector('#sns img');
+	    const snsLink = document.querySelector('#sns a'); 
+	    const mainImg = document.querySelector('.left-content .images img');
+	    const floorEl = document.getElementById('floor-count');
+	    const skillRow = document.getElementById('special-skill-row'); 
+	    const skillText = document.getElementById('special-skill');    
+	    const btnAnomaly = document.getElementById('btn-anomaly');
+	    const btnNormal = document.getElementById('btn-normal');
+	    const btnRestart = document.getElementById('btn-restart');
+	    const adArea = document.getElementById('anomaly-ad'); // ここで定義
+	
+	    const elements = {
+	        birthday: document.getElementById('birthday'),
+	        from: document.getElementById('from'),
+	        hobby: document.getElementById('hobby'),
+	        skill: document.getElementById('special-skill')
+	    };
 
-    const elements = {
-        birthday: document.getElementById('birthday'),
-        from: document.getElementById('from'),
-        hobby: document.getElementById('hobby'),
-        skill: document.getElementById('special-skill')
-    };
-
-    // 2. 全てを初期状態にリセット
-    if (adArea) adArea.style.display = 'none'; // ここでエラーが出ていたのを修正
-    
-    card.className = ''; 
-    if (floorEl) floorEl.innerText = currentFloor; 
-    
-    elements.birthday.innerText = defaultProfile.birthday;
-    elements.from.innerText = defaultProfile.from;
-    elements.hobby.innerText = defaultProfile.hobby;
-
-    if (skillText) {
-        skillText.innerText = "早起き、情報収集";
-        skillText.style.color = "";
-    }
-    
-    document.body.classList.remove('anomaly-red');
-    
-    if (skillRow && currentFloor < 3) {
-        skillRow.style.display = "none";
-    }
-    
-    if (mainImg) {
-        mainImg.style.filter = '';
-        mainImg.style.transition = '';
-        mainImg.style.opacity = '1';
-    }
-    
-    if (btnNormal) {
-        btnNormal.style.position = '';
-        btnNormal.style.transform = '';
-        btnNormal.style.transition = '';
-        if (activeRunawayEvent) {
-            window.removeEventListener('mousemove', activeRunawayEvent);
-            activeRunawayEvent = null;
-        }
-    }
-
-    if (snsIcon) snsIcon.src = "images/X.jpg"; 
-    if (snsLink) {
-        snsLink.href = "";
-        snsLink.onclick = null; 
-    }
-    if (mainImg) {
-        mainImg.style.transform = "none";
-    }
-
-    if (overlay) {
-        overlay.style.display = 'none';
-        overlay.innerText = '';
-    }
-
-    // 3. タイマーとイベント監視の完全停止
-    if (blackoutInterval) {
-        clearInterval(blackoutInterval);
-        blackoutInterval = null;
-    }
-    if (glitchTimer) {
-        clearInterval(glitchTimer);
-        glitchTimer = null;
-    }
-    anomalyTimeouts.forEach(timeout => clearTimeout(timeout));
-    anomalyTimeouts = [];
-    window.removeEventListener('mousemove', traceMouse);
-
-    // 4. クリア判定
-    if (currentFloor >= 9) {
-        if (btnAnomaly) btnAnomaly.style.display = 'none';
-        if (btnNormal)  btnNormal.style.display = 'none';
-        if (btnRestart) btnRestart.style.display = 'inline-block';
-        if (floorEl) floorEl.innerText = "8";
-        if (skillRow) skillRow.style.display = "";
-        renderFullProfile();
-        hasAnomaly = false;
-        return; 
-    } 
-
-    if (btnRestart) btnRestart.style.display = 'none';
-    if (btnNormal)  btnNormal.style.display = 'inline-block';
-    if (btnAnomaly) {
-        btnAnomaly.style.display = (currentFloor === 0) ? 'none' : 'inline-block';
-    }
-
-    if (floorEl) floorEl.innerText = currentFloor;
-
-    if (currentFloor === 0) {
-        hasAnomaly = false;
-        if (skillRow) skillRow.style.display = "none";
-        return; 
-    }
-    
-    if (currentFloor >= 3) {
-        if (skillRow && skillRow.style.display === "none") {
-            alert("【新着情報】特技の項目が新しく追加されました！");
-            skillRow.style.display = ""; 
-        }
-    }
-
-    // 5. 異変判定 (50%)
-    hasAnomaly = Math.random() > 0.5;
-
-    if (hasAnomaly) {
-        // 広告を常に表示
-        if (adArea) {
-            adArea.style.display = 'block';
-            const adLink = adArea.querySelector('a');
-            if (adLink) adLink.href = "https://jun27201.github.io/famazon/";
-        }
-
-        // 他の異変を抽選
-        const allKeys = Object.keys(anomalySettings).filter(key => key !== 'anomaly-ad');
-        const availableAnomalies = allKeys.filter(key => !appearedAnomalies.includes(key));
-
-        let targetKey = "";
-        if (availableAnomalies.length > 0) {
-            targetKey = availableAnomalies[Math.floor(Math.random() * availableAnomalies.length)];
-            appearedAnomalies.push(targetKey);
-        } else {
-            appearedAnomalies = []; // 出尽くしたらリセット
-            targetKey = allKeys[Math.floor(Math.random() * allKeys.length)];
-        }
-
-        if (targetKey && anomalySettings[targetKey]) {
-            anomalySettings[targetKey].action(card, elements);
-            console.log("異変発生中: " + targetKey + " (+ 広告)");
-        }
-
-        // 放置判定タイマー
-        blackoutInterval = setInterval(() => {
-            if (hasAnomaly) {
-                const dice = Math.random();
-                if (dice < 0.005) { 
-                    clearInterval(blackoutInterval);
-                    triggerBlackout();
-                }
-            }
-        }, 60000);
-
-    } else {
-        console.log("異変なし");
-        if (adArea) adArea.style.display = 'none';
-    }
-}
+	    // 2. 全てを初期状態にリセット
+	    if (adArea) adArea.style.display = 'none'; // 定義後なのでエラーになりません
+	    
+	    card.className = ''; 
+	    if (floorEl) floorEl.innerText = currentFloor; 
+	    
+	    elements.birthday.innerText = defaultProfile.birthday;
+	    elements.from.innerText = defaultProfile.from;
+	    elements.hobby.innerText = defaultProfile.hobby;
+	
+	    if (skillText) {
+	        skillText.innerText = "早起き、情報収集";
+	        skillText.style.color = "";
+	    }
+	    
+	    document.body.classList.remove('anomaly-red');
+	    
+	    if (skillRow && currentFloor < 3) {
+	        skillRow.style.display = "none";
+	    }
+	    
+	    if (mainImg) {
+	        mainImg.style.filter = '';
+	        mainImg.style.transition = '';
+	        mainImg.style.opacity = '1';
+	    }
+	    
+	    if (btnNormal) {
+	        btnNormal.style.position = '';
+	        btnNormal.style.transform = '';
+	        btnNormal.style.transition = '';
+	        if (activeRunawayEvent) {
+	            window.removeEventListener('mousemove', activeRunawayEvent);
+	            activeRunawayEvent = null;
+	        }
+	    }
+	
+	    if (snsIcon) snsIcon.src = "images/X.jpg"; 
+	    if (snsLink) {
+	        snsLink.href = "";
+	        snsLink.onclick = null; 
+	    }
+	    if (mainImg) {
+	        mainImg.style.transform = "none";
+	    }
+	
+	    if (overlay) {
+	        overlay.style.display = 'none';
+	        overlay.innerText = '';
+	    }
+	
+	    // 3. タイマーとイベント監視の完全停止
+	    if (blackoutInterval) {
+	        clearInterval(blackoutInterval);
+	        blackoutInterval = null;
+	    }
+	    if (glitchTimer) {
+	        clearInterval(glitchTimer);
+	        glitchTimer = null;
+	    }
+	    anomalyTimeouts.forEach(timeout => clearTimeout(timeout));
+	    anomalyTimeouts = [];
+	    window.removeEventListener('mousemove', traceMouse);
+	
+	    // 4. クリア判定
+	    if (currentFloor >= 9) {
+	        if (btnAnomaly) btnAnomaly.style.display = 'none';
+	        if (btnNormal)  btnNormal.style.display = 'none';
+	        if (btnRestart) btnRestart.style.display = 'inline-block';
+	        if (floorEl) floorEl.innerText = "8";
+	        if (skillRow) skillRow.style.display = "";
+	        renderFullProfile();
+	        hasAnomaly = false;
+	        return; 
+	    } 
+	
+	    if (btnRestart) btnRestart.style.display = 'none';
+	    if (btnNormal)  btnNormal.style.display = 'inline-block';
+	    if (btnAnomaly) {
+	        btnAnomaly.style.display = (currentFloor === 0) ? 'none' : 'inline-block';
+	    }
+	
+	    if (floorEl) floorEl.innerText = currentFloor;
+	
+	    if (currentFloor === 0) {
+	        hasAnomaly = false;
+	        if (skillRow) skillRow.style.display = "none";
+	        return; 
+	    }
+	    
+	    if (currentFloor >= 3) {
+	        if (skillRow && skillRow.style.display === "none") {
+	            alert("【新着情報】特技の項目が新しく追加されました！");
+	            skillRow.style.display = ""; 
+	        }
+	    }
+	
+	    // 5. 異変判定 (50%)
+	    hasAnomaly = Math.random() > 0.5;
+	
+	    if (hasAnomaly) {
+	        // 異変中：広告表示
+	        if (adArea) {
+	            adArea.style.display = 'block';
+	            const adLink = adArea.querySelector('a');
+	            if (adLink) adLink.href = "https://jun27201.github.io/famazon/";
+	        }
+	
+	        // 他の異変を抽選
+	        const allKeys = Object.keys(anomalySettings).filter(key => key !== 'anomaly-ad');
+	        const availableAnomalies = allKeys.filter(key => !appearedAnomalies.includes(key));
+	
+	        let targetKey = "";
+	        if (availableAnomalies.length > 0) {
+	            targetKey = availableAnomalies[Math.floor(Math.random() * availableAnomalies.length)];
+	            appearedAnomalies.push(targetKey);
+	        } else {
+	            appearedAnomalies = [];
+	            targetKey = allKeys[Math.floor(Math.random() * allKeys.length)];
+	        }
+	
+	        if (targetKey && anomalySettings[targetKey]) {
+	            anomalySettings[targetKey].action(card, elements);
+	            console.log("異変発生中: " + targetKey + " (＋ 広告表示)");
+	        }
+	
+	        // 放置判定
+	        blackoutInterval = setInterval(() => {
+	            if (hasAnomaly) {
+	                if (Math.random() < 0.005) { 
+	                    clearInterval(blackoutInterval);
+	                    triggerBlackout();
+	                }
+	            }
+	        }, 60000);
+	
+	    } else {
+	        console.log("異変なし");
+	        if (adArea) adArea.style.display = 'none';
+	    }
+	}
 	
 	function getZalgoText(length) {
 	    const chars = "迴ｾ蝨ｨ縺ｮ髫主ｱ､ 縺薙％縺ｯ縺ｩ縺薙??縺ｯ繧?￥縺溘縺代※縲?";
