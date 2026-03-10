@@ -7,6 +7,60 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="https://pyscript.net/releases/2023.11.1/pyscript.css" />
 <script defer src="https://pyscript.net/releases/2023.11.1/pyscript.js"></script>
+
+<!-- 広告スタイルの最適化 -->
+<style>
+    /* 広告をボタンの下に配置するスタイル */
+    #anomaly-ad {
+        display: block;
+        margin: 20px auto;
+        max-width: 300px;
+        width: 90%;
+        border: 3px solid #333;
+        background: #000;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    #anomaly-ad a {
+        text-decoration: none;
+        color: white;
+        display: block;
+    }
+
+    #anomaly-ad img {
+        width: 100%;
+        display: block;
+        height: auto;
+    }
+
+    #anomaly-ad .ad-text {
+        font-size: 11px;
+        text-align: center;
+        padding: 8px;
+        background: #111;
+    }
+
+    /* レスポンシブ対応 */
+    @media screen and (max-width: 768px) {
+        #anomaly-ad {
+            max-width: 280px;
+            margin: 15px auto;
+        }
+
+        #anomaly-ad .ad-text {
+            font-size: 10px;
+            padding: 6px;
+        }
+    }
+
+    /* ボタンエリアと広告の配置調整 */
+    .actions {
+        text-align: center;
+        margin: 20px 0;
+    }
+</style>
 </head>
 <body id="profile-game">
 
@@ -21,7 +75,6 @@
         <span id="floor-display">現在の階数: <span id="floor-count">0</span> / 8</span>
     </div>
 	</header>
-
 
 	<!-- ヘッダーここまで -->
 <script>
@@ -129,8 +182,8 @@ function toggleWorks() {
                     <div class="main-display">
                         <img src="${work.images[0]}" 
                              id="current-img-${workIndex}" 
-                             loading="lazy"
                              onclick="zoomImage(this.src)" 
+                             loading="lazy"
                              style="cursor: zoom-in;">
                     </div>
                     <div class="thumb-nav">${thumbTags}</div>
@@ -366,9 +419,6 @@ const anomalySettings = {
     },
 };
 
-// ========================================
-// ★ ここが修正の核心部分：updateFloor は単独の関数として定義
-// ========================================
 function updateFloor() {
     const card = document.getElementById('profile-game');
     const overlay = document.getElementById('blackout-overlay');
@@ -392,14 +442,10 @@ function updateFloor() {
     };
 
     if (adArea) {
-	    adArea.style.display = 'block'; 
-	    adArea.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
-	    adArea.style.border = '3px solid #333'; // 枠の色を通常に戻す
+	    adArea.style.display = 'block';
 	    
 	    if (adLink) {
-	        // 通常時・異変時に関わらず、常に同じリンク先を設定
 	        adLink.href = "https://jun27201.github.io/famazon/"; 
-	        adLink.style.cursor = "pointer"; // 常にクリック可能にする
 	    }
 	}
 
@@ -498,7 +544,6 @@ function updateFloor() {
     hasAnomaly = Math.random() > 0.5;
 
     if (hasAnomaly) {
-        // 広告(anomaly-ad)を除外して、他の異変から抽選
         const allKeys = Object.keys(anomalySettings).filter(key => key !== 'anomaly-ad');
         const availableAnomalies = allKeys.filter(key => !appearedAnomalies.includes(key));
 
@@ -516,7 +561,6 @@ function updateFloor() {
             console.log("異変発生中: " + targetKey);
         }
 
-        // ブラックアウトのタイマー設定
         blackoutInterval = setInterval(() => {
             if (hasAnomaly) {
                 if (Math.random() < 0.005) {
@@ -530,8 +574,6 @@ function updateFloor() {
         console.log("異変なし");
     }
 }
-
-
 
 function getZalgoText(length) {
     const chars = "迴ｾ蝨ｨ縺ｮ髫主ｱ､ 縺薙％縺ｯ縺ｩ縺薙??縺ｯ繧?￥縺溘縺代※縲?";
@@ -626,12 +668,10 @@ function renderFullProfile() {
     console.log("%c[DEBUG] 全ての異変を停止し、完成版プロフィールを表示しました。", "color: #2ecc71;");
 }
 
-// ページ読み込み時に最初のフロアをセット
 window.onload = function() {
     updateFloor();
 };
 
-// コンソールで debugAnomaly('anomaly-runaway') と打つと即座に発動します
 window.debugAnomaly = function(key) {
     hasAnomaly = true;
     const card = document.getElementById('profile-game');
@@ -677,8 +717,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalEl) modalEl.scrollTo({ top: 0, behavior: 'smooth' });
     });
 });
-
-	
 </script>
 	
 	<!-- メイン -->
@@ -707,7 +745,8 @@ document.addEventListener('DOMContentLoaded', () => {
 					    </tr>
 					    <tr>
 					        <th>出身地</th>
-					        <td id="from">兵庫県</td> </tr>
+					        <td id="from">兵庫県</td>
+					    </tr>
 					    <tr>
 					        <th>趣味</th>
 					        <td id="hobby">一人旅、ライブ鑑賞</td>
@@ -722,18 +761,30 @@ document.addEventListener('DOMContentLoaded', () => {
 		</div>
 	</main>
 	<!-- メインここまで -->
+	
+	<!-- ボタンエリア -->
 	<div class="actions">
 		<button id="btn-anomaly" onclick="handleAction(true)">異変あり（引き返す）</button>
         <button id="btn-normal" onclick="handleAction(false)">異変なし（進む）</button>
         <button id="btn-restart" onclick="resetGame()" style="display: none;">もう一回最初から遊ぶ</button>
     </div>
+    
+    <!-- 広告エリア：ボタンの直下に配置 -->
+    <div id="anomaly-ad">
+        <a href="https://jun27201.github.io/famazon/" target="_blank">
+            <img src="images/ad-image.png" alt="AD" loading="lazy">
+            <div class="ad-text">【PR】クリックして詳細を見る</div>
+        </a>
+    </div>
+	
 	<div id="blackout-overlay"></div>
+	
 	<!-- フッター -->
 	<footer>
 
-
 	</footer>
 	<!-- フッターここまで -->
+	
 	<div id="works-modal" class="modal">
 	    <div class="modal-content">
 	        <span class="close-button" onclick="toggleWorks()">&times;</span>
@@ -743,19 +794,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	        <div id="works-container" class="works-grid"></div>
 	    </div>
 	</div>
+	
 	<div id="image-overlay" class="image-overlay" onclick="closeImage()">
-    <span class="close-overlay">&times;</span>
-    <img id="overlay-img" src="" alt="拡大画像" loading="lazy">
+        <span class="close-overlay">&times;</span>
+        <img id="overlay-img" src="" alt="拡大画像" loading="lazy">
     </div>
     
 	<button id="back-to-top" title="ページトップへ戻る">↑</button>
-	
-<div id="anomaly-ad" style="display:block; position:fixed; bottom:20px; right:20px; width:200px; border:3px solid #333; background:#000; z-index:10000;">
-    <a href="#" target="_blank" style="text-decoration:none; color:white;">
-        <img src="images/ad-image.png" alt="AD" loading="lazy" style="width:100%; display:block;">
-        <div style="font-size:10px; text-align:center; padding:5px;">【PR】クリックして詳細を見る</div>
-    </a>
-</div>
 	
 </body>
 </html>
