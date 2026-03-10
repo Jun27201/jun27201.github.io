@@ -602,17 +602,31 @@ body.anomaly-red img {
 /* 異変広告のコンテナ */
 /* 広告の基本スタイルをCSS側に移す */
 /* 異変広告のコンテナ */
-#anomaly-ad {
+/* 広告の基本スタイル（中央配置版） */
+.anomaly-ad {
+    display: block;
     position: fixed;
-    bottom: 80px;
-    right: 20px;
-    width: 220px;
-    background: #fff;
-    border: 3px solid #333; 
-    z-index: 99999;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    border: 3px solid #333;
+    background: #000;
+    z-index: 10000;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    display: block !important; 
+    transition: all 0.3s ease;
 }
+
+@media screen and (max-width: 768px) {
+    .anomaly-ad {
+        width: 120px;
+        bottom: 10px;
+        border-width: 2px;
+    }
+    
+    /* 以下、同じ内容 */
+}
+
 /* 広告内の画像 */
 #anomaly-ad img {
     width: 100%;
