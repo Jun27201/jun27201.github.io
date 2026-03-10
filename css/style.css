@@ -603,14 +603,17 @@ body.anomaly-red img {
 /* 広告の基本スタイルをCSS側に移す */
 #anomaly-ad {
     position: fixed;
-    bottom: 80px; /* 戻るボタンと被らないよう少し上げる */
+    bottom: 80px;
     right: 20px;
     width: 220px;
     background: #fff;
-    border: 3px solid #ff0000;
+    /* 通常時は赤ではなく落ち着いた色にする */
+    border: 3px solid #333; 
     z-index: 99999;
-    box-shadow: 0 0 15px rgba(255,0,0,0.7);
-    transition: opacity 0.3s;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+    /* 確実に表示させる */
+    display: block !important; 
 }
 
 /* 広告内の画像 */
