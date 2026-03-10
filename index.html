@@ -120,7 +120,7 @@ function toggleWorks() {
             const thumbTags = work.images.map((imgSrc, i) =>
                 `<div class="thumb ${i === 0 ? 'active' : ''}" 
                       onclick="changeMainImage(${workIndex}, ${i})">
-                    <img src="${imgSrc}" onerror="this.src='images/no-image.png'">
+                    <img src="${imgSrc}" loading="lazy" onerror="this.src='images/no-image.png'">
                  </div>`
             ).join('');
 
@@ -129,6 +129,7 @@ function toggleWorks() {
                     <div class="main-display">
                         <img src="${work.images[0]}" 
                              id="current-img-${workIndex}" 
+                             loading="lazy"
                              onclick="zoomImage(this.src)" 
                              style="cursor: zoom-in;">
                     </div>
@@ -692,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
 						<img alt="じぶん" src="images/IMG_5952.jpg">
 					</div>
 				<div id="sns">
-					<img alt="X" src="images/X.jpg" >
+					<img alt="X" src="images/X.jpg" loading="lazy">
 				</div>
 			</div>
 			
@@ -744,14 +745,14 @@ document.addEventListener('DOMContentLoaded', () => {
 	</div>
 	<div id="image-overlay" class="image-overlay" onclick="closeImage()">
     <span class="close-overlay">&times;</span>
-    <img id="overlay-img" src="" alt="拡大画像">
+    <img id="overlay-img" src="" alt="拡大画像" loading="lazy">
     </div>
     
 	<button id="back-to-top" title="ページトップへ戻る">↑</button>
 	
 <div id="anomaly-ad" style="display:block; position:fixed; bottom:20px; right:20px; width:200px; border:3px solid #333; background:#000; z-index:10000;">
     <a href="#" target="_blank" style="text-decoration:none; color:white;">
-        <img src="images/ad-image.png" alt="AD" style="width:100%; display:block;">
+        <img src="images/ad-image.png" alt="AD" loading="lazy" style="width:100%; display:block;">
         <div style="font-size:10px; text-align:center; padding:5px;">【PR】クリックして詳細を見る</div>
     </a>
 </div>
