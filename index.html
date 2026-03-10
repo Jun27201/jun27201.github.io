@@ -373,220 +373,170 @@
 	
 
 	function updateFloor() {
-	    // 1. 各種要素の取得
-	    const card = document.getElementById('profile-game');
-	    const overlay = document.getElementById('blackout-overlay');
-	    const snsIcon = document.querySelector('#sns img');
-	    const snsLink = document.querySelector('.sns a'); // 元のコードのセレクタミス修正（.sns -> #sns）
-	    const mainImg = document.querySelector('.left-content .images img');
-	    const floorEl = document.getElementById('floor-count');
-	    const skillRow = document.getElementById('special-skill-row'); 
-	    const skillText = document.getElementById('special-skill');    
-	    const btnAnomaly = document.getElementById('btn-anomaly');
-	    const btnNormal = document.getElementById('btn-normal');
-	    const btnRestart = document.getElementById('btn-restart');
-	
-	    
+    // 1. 各種要素の取得
+    const card = document.getElementById('profile-game');
+    const overlay = document.getElementById('blackout-overlay');
+    const snsIcon = document.querySelector('#sns img');
+    const snsLink = document.querySelector('#sns a'); 
+    const mainImg = document.querySelector('.left-content .images img');
+    const floorEl = document.getElementById('floor-count');
+    const skillRow = document.getElementById('special-skill-row'); 
+    const skillText = document.getElementById('special-skill');    
+    const btnAnomaly = document.getElementById('btn-anomaly');
+    const btnNormal = document.getElementById('btn-normal');
+    const btnRestart = document.getElementById('btn-restart');
+    // 追加：広告エリアをここで取得
+    const adArea = document.getElementById('anomaly-ad');
 
-	    const elements = {
-	        birthday: document.getElementById('birthday'),
-	        from: document.getElementById('from'),
-	        hobby: document.getElementById('hobby'),
-	        skill: document.getElementById('special-skill')
-	    };
-	    
+    const elements = {
+        birthday: document.getElementById('birthday'),
+        from: document.getElementById('from'),
+        hobby: document.getElementById('hobby'),
+        skill: document.getElementById('special-skill')
+    };
 
-	    // 2. 全てを初期状態にリセット
-		if (adArea) adArea.style.display = 'none';
-		
-	    card.className = ''; 
-	    if (floorEl) floorEl.innerText = currentFloor; 
-	    
-	    // 基本プロフィールのリセット
-	    elements.birthday.innerText = defaultProfile.birthday;
-	    elements.from.innerText = defaultProfile.from;
-	    elements.hobby.innerText = defaultProfile.hobby;
+    // 2. 全てを初期状態にリセット
+    if (adArea) adArea.style.display = 'none'; // ここでエラーが出ていたのを修正
+    
+    card.className = ''; 
+    if (floorEl) floorEl.innerText = currentFloor; 
+    
+    elements.birthday.innerText = defaultProfile.birthday;
+    elements.from.innerText = defaultProfile.from;
+    elements.hobby.innerText = defaultProfile.hobby;
 
-	    if (skillText) {
-	        skillText.innerText = "早起き、情報収集";
-	        skillText.style.color = "";
-	    }
-	    
-	    document.body.classList.remove('anomaly-red');
-	    
-	    if (skillRow && currentFloor < 3) {
-	        skillRow.style.display = "none";
-	    }
-	    
-	    if (mainImg) {
-	        mainImg.style.filter = '';       // 黒塗りを解除
-	        mainImg.style.transition = '';   // アニメーションをリセット
-	        mainImg.style.opacity = '1';     // 消える異変用
-	    }
-	    
-	    if (btnNormal) {
-	        btnNormal.style.position = '';
-	        btnNormal.style.transform = '';
-	        btnNormal.style.transition = '';
-	        
-	        // windowからイベントリスナーを剥がす
-	        if (activeRunawayEvent) {
-	            window.removeEventListener('mousemove', activeRunawayEvent);
-	            activeRunawayEvent = null;
-	        }
-	    }
+    if (skillText) {
+        skillText.innerText = "早起き、情報収集";
+        skillText.style.color = "";
+    }
+    
+    document.body.classList.remove('anomaly-red');
+    
+    if (skillRow && currentFloor < 3) {
+        skillRow.style.display = "none";
+    }
+    
+    if (mainImg) {
+        mainImg.style.filter = '';
+        mainImg.style.transition = '';
+        mainImg.style.opacity = '1';
+    }
+    
+    if (btnNormal) {
+        btnNormal.style.position = '';
+        btnNormal.style.transform = '';
+        btnNormal.style.transition = '';
+        if (activeRunawayEvent) {
+            window.removeEventListener('mousemove', activeRunawayEvent);
+            activeRunawayEvent = null;
+        }
+    }
 
-	    // SNS・画像のリセット
-	    if (snsIcon) snsIcon.src = "images/X.jpg"; 
-	    if (snsLink) {
-	        snsLink.href = "";
-	        snsLink.onclick = null; 
-	    }
-	    if (mainImg) {
-	        mainImg.style.transform = "none";
-	    }
+    if (snsIcon) snsIcon.src = "images/X.jpg"; 
+    if (snsLink) {
+        snsLink.href = "";
+        snsLink.onclick = null; 
+    }
+    if (mainImg) {
+        mainImg.style.transform = "none";
+    }
 
-	    if (overlay) {
-	        overlay.style.display = 'none';
-	        overlay.innerText = '';
-	    }
+    if (overlay) {
+        overlay.style.display = 'none';
+        overlay.innerText = '';
+    }
 
-	    // 3. タイマーとイベント監視の完全停止
-	    if (blackoutInterval) {
-	        clearInterval(blackoutInterval);
-	        blackoutInterval = null;
-	    }
-	    
-	    if (glitchTimer) {
-	        clearInterval(glitchTimer);
-	        glitchTimer = null;
-	    }
-	    
-	    anomalyTimeouts.forEach(timeout => clearTimeout(timeout));
-	    anomalyTimeouts = [];
-	    
-	    window.removeEventListener('mousemove', traceMouse);
-	    
-	    if (overlay) { overlay.style.display = 'none'; }
+    // 3. タイマーとイベント監視の完全停止
+    if (blackoutInterval) {
+        clearInterval(blackoutInterval);
+        blackoutInterval = null;
+    }
+    if (glitchTimer) {
+        clearInterval(glitchTimer);
+        glitchTimer = null;
+    }
+    anomalyTimeouts.forEach(timeout => clearTimeout(timeout));
+    anomalyTimeouts = [];
+    window.removeEventListener('mousemove', traceMouse);
 
-	    // --- ここから「階数に応じた表示」を作る ---
-
-	    if (currentFloor >= 9) {
-        // 【クリア状態】
-        console.log("%c[SYSTEM] クリア画面を構築します", "color: #2ecc71;");
-        
+    // 4. クリア判定
+    if (currentFloor >= 9) {
         if (btnAnomaly) btnAnomaly.style.display = 'none';
-        if (btnNormal)  btnNormal.style.display = 'none'; // これで確実に消えます
+        if (btnNormal)  btnNormal.style.display = 'none';
         if (btnRestart) btnRestart.style.display = 'inline-block';
-        
         if (floorEl) floorEl.innerText = "8";
         if (skillRow) skillRow.style.display = "";
-        
         renderFullProfile();
-        
         hasAnomaly = false;
-        
-        // 異変の残像を消すためにリセット処理へ続く、あるいはここでreturn
-        // お掃除（タイマー停止など）はクリア時も必要なので、returnの前に書くのが理想
-         
         return; 
     } 
 
-    // 【通常プレイ中】
     if (btnRestart) btnRestart.style.display = 'none';
-    
-    // 進むボタンはプレイ中なら常に表示
     if (btnNormal)  btnNormal.style.display = 'inline-block';
-    
-    // 引き返すボタンの制御（0階なら隠す）
     if (btnAnomaly) {
         btnAnomaly.style.display = (currentFloor === 0) ? 'none' : 'inline-block';
     }
 
     if (floorEl) floorEl.innerText = currentFloor;
-	    
-	    // 0階ならここで終了
-	    if (currentFloor === 0) {
-        	hasAnomaly = false;
-	        if (skillRow) skillRow.style.display = "none";
-	        return; 
-    	}
-	    
-	    if (currentFloor >= 3) {
-	        if (skillRow && skillRow.style.display === "none") {
-	            alert("【新着情報】特技の項目が新しく追加されました！");
-	            skillRow.style.display = ""; 
-	        }
-	    } else {
-	        if (skillRow) skillRow.style.display = "none";
-	    }
-	    
-	    
 
-	    // 5. 異変判定 (50%の確率)
-	    hasAnomaly = Math.random() > 0.5;
+    if (currentFloor === 0) {
+        hasAnomaly = false;
+        if (skillRow) skillRow.style.display = "none";
+        return; 
+    }
+    
+    if (currentFloor >= 3) {
+        if (skillRow && skillRow.style.display === "none") {
+            alert("【新着情報】特技の項目が新しく追加されました！");
+            skillRow.style.display = ""; 
+        }
+    }
 
-	    if (hasAnomaly) {
-	    	if (adArea) {
-	            adArea.style.display = 'block';
-	            const adLink = adArea.querySelector('a');
-	            if (adLink) adLink.href = "https://jun27201.github.io/famazon/";
-	        }
+    // 5. 異変判定 (50%)
+    hasAnomaly = Math.random() > 0.5;
 
-			// 2. 他の異変を抽選して実行 (既存のロジック)
-			const allKeys = Object.keys(anomalySettings).filter(key => key !== 'anomaly-ad'); // 広告を除外
-			const availableAnomalies = allKeys.filter(key => !appearedAnomalies.includes(key));
+    if (hasAnomaly) {
+        // 広告を常に表示
+        if (adArea) {
+            adArea.style.display = 'block';
+            const adLink = adArea.querySelector('a');
+            if (adLink) adLink.href = "https://jun27201.github.io/famazon/";
+        }
 
-			let targetKey = "";
-		    if (availableAnomalies.length > 0) {
+        // 他の異変を抽選
+        const allKeys = Object.keys(anomalySettings).filter(key => key !== 'anomaly-ad');
+        const availableAnomalies = allKeys.filter(key => !appearedAnomalies.includes(key));
+
+        let targetKey = "";
+        if (availableAnomalies.length > 0) {
             targetKey = availableAnomalies[Math.floor(Math.random() * availableAnomalies.length)];
             appearedAnomalies.push(targetKey);
-	        } else {
-	            // 全て出尽くした場合はリセットして再抽選
-	            appearedAnomalies = [];
-	            targetKey = allKeys[Math.floor(Math.random() * allKeys.length)];
-	        }
-	
-	        if (targetKey && anomalySettings[targetKey]) {
-	            anomalySettings[targetKey].action(card, elements);
-	            console.log("異変発生中: " + targetKey + " (＋ 広告表示)");
-	        }
-	            
-	            // 出現リストに追加
-	            appearedAnomalies.push(randomKey);
+        } else {
+            appearedAnomalies = []; // 出尽くしたらリセット
+            targetKey = allKeys[Math.floor(Math.random() * allKeys.length)];
+        }
 
-	            console.log("異変発生中（新規）: " + randomKey);
-	            console.log("出現済みリスト: ", appearedAnomalies);
-			
-	        console.log("%c[SYSTEM] 放置判定タイマー開始 (1分後に実行)");
-	        // 6. 1分後に一度だけ判定を行うタイマーをセット
-	        blackoutInterval = setInterval(() => {
-	        	console.log("%c[SYSTEM] 1分経過：ブラックアウト判定を実行します...");
-	            // hasAnomalyがまだtrue（＝階を移動していない）なら判定
-	        	if (hasAnomaly) {
-	                const dice = Math.random();
-	                const threshold = 0.005; // 0.5%の確率
-	                
-	                console.log(`[DEBUG] 判定ダイス: ${dice.toFixed(4)} (しきい値: ${threshold})`);
+        if (targetKey && anomalySettings[targetKey]) {
+            anomalySettings[targetKey].action(card, elements);
+            console.log("異変発生中: " + targetKey + " (+ 広告)");
+        }
 
-	                if (dice < threshold) { 
-	                    console.error("%c[EVENT] ブラックアウト条件合致。発動します。", "background: red; color: white;");
-	                    clearInterval(blackoutInterval);
-	                    triggerBlackout();
-	                } else {
-	                    console.log("%c[SAFE] 判定に外れました。", "color: #27ae60;");
-	                }
-	            } else {
-	                console.log("[INFO] すでに階層が移動しているため、判定をスキップしました。");
-	            }
-	        }, 60000); // 300,000ms = 5分
-       		
-   		} else {
-	        // 異変がない場合の処理
-	        console.log("異変なし");
-			if (adArea) adArea.style.display = 'none';
-	    }
-	}
+        // 放置判定タイマー
+        blackoutInterval = setInterval(() => {
+            if (hasAnomaly) {
+                const dice = Math.random();
+                if (dice < 0.005) { 
+                    clearInterval(blackoutInterval);
+                    triggerBlackout();
+                }
+            }
+        }, 60000);
+
+    } else {
+        console.log("異変なし");
+        if (adArea) adArea.style.display = 'none';
+    }
+}
 	
 	function getZalgoText(length) {
 	    const chars = "迴ｾ蝨ｨ縺ｮ髫主ｱ､ 縺薙％縺ｯ縺ｩ縺薙??縺ｯ繧?￥縺溘縺代※縲?";
