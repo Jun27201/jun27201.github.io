@@ -24,14 +24,14 @@
 
 
 	<!-- ヘッダーここまで -->
-	<script>
+<script>
 	let currentFloor = 0;
-let hasAnomaly = false;
-let blackoutInterval = null;
-let glitchTimer = null;
-let activeRunawayEvent = null;
-let anomalyTimeouts = [];
-let appearedAnomalies = [];
+	let hasAnomaly = false;
+	let blackoutInterval = null;
+	let glitchTimer = null;
+	let activeRunawayEvent = null;
+	let anomalyTimeouts = [];
+	let appearedAnomalies = [];
 
 const worksList = [
     {
@@ -473,8 +473,8 @@ function updateFloor() {
 
     if (hasAnomaly) {
         if (adArea) {
-            adArea.style.border = '3px solid #ff0000';
-            adArea.style.boxShadow = '0 0 15px rgba(255,0,0,0.7)';
+            adArea.style.border = '3px solid #333'; 
+            adArea.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
 
             if (adLink) {
                 adLink.href = "https://jun27201.github.io/famazon/";
@@ -514,11 +514,9 @@ function updateFloor() {
             adArea.style.display = 'block';
         }
     }
-} // ★ updateFloor ここで正しく閉じる
+} 
 
-// ========================================
-// ★ 以下の関数群はすべて updateFloor の外側に独立して定義
-// ========================================
+
 
 function getZalgoText(length) {
     const chars = "迴ｾ蝨ｨ縺ｮ髫主ｱ､ 縺薙％縺ｯ縺ｩ縺薙??縺ｯ繧?￥縺溘縺代※縲?";
@@ -666,7 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 	
-	</script>
+</script>
 	
 	<!-- メイン -->
 	<main>
